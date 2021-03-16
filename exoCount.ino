@@ -8,12 +8,19 @@
 
 int myBluePins[] = {7, 8, 9, 10, 11, 12};
 
+//char arrayExoName[] = {"bras1", "bras2", "bras3", "Bras4", "JambeDroite", "JambeGauche", "Saut", "AbdosHaut", "AbdosBas", "Bras5"};
+
+int arrayExo[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
 int arraySerie[] = {6, 6, 6, 6, 6, 6, 4, 6, 6, 4};
 int arrayCommonRest[] = {25, 25, 25, 25, 25, 25, 25, 25, 25, 60};
 int arrayLongRest[] = {25, 25, 180, 180, 120, 180, 180, 180, 90, 60};
 
-//char arrayExoName[] = {"bras1", "bras2", "bras3", "Bras4", "JambeDroite", "JambeGauche", "Saut", "AbdosHaut", "AbdosBas", "Bras5"};
-int exoBras1[] = {6, 25, 25};
+//int arraySerie[] = {6, 6, 6, 6, 6, 6, 4, 6, 6, 4};
+//int arrayCommonRest[] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 6};
+//int arrayLongRest[] = {2, 2, 18, 18, 12, 18, 18, 18, 9, 6};
+
+//int exoBras1[] = {6, 25, 25};
 
 int serie = 0;
 int exercice = 0;
@@ -54,21 +61,29 @@ void loop()
   int buttonState = digitalRead(pushButton);
 
   if (buttonState == 1) {
+
+    //debug
+    Serial.println("button pushed");
+    String strState = "Exo - Series - Common Rest - Long Rest : ";
+    Serial.println(strState + arrayExo[exercice] + " - " + arraySerie[exercice] + " - " + arrayCommonRest[exercice] + " - " + arrayLongRest[exercice] );
+
+    serie = (serie + 1);
     
     if (serie < arraySerie[exercice]){
-      serie = (serie + 1);
       digitalWrite(serie + 6, HIGH);
+      commonRest(arrayCommonRest[exercice]);
       String strOne = "Serie finished : ";
       Serial.println(strOne + serie);
-      commonRest(arrayCommonRest[exercice]);
     }
   
     if (serie == arraySerie[exercice]){
+      longRest(arrayLongRest[exercice]);
       exercice = (exercice + 1);
       String strOne = "Exercice finished : ";
       Serial.println(strOne + exercice);
-      longRest(arrayLongRest[exercice]);
     }
+
+    Serial.println("end button process");
 
  }
 }
@@ -84,6 +99,7 @@ void offPin(){
 void commonRest(int x){
   
     Serial.println("let's take few rest...");
+    Serial.println(x);
     digitalWrite(workPin, LOW);
     
     for (secondes = 0; secondes < x; ++secondes) {
@@ -115,9 +131,13 @@ void blinkLed(int x){
 void longRest(int x){
   
   Serial.println("let's take some long rest...");
+  Serial.println(x);
   digitalWrite(workPin, LOW);
 
   int tours = x / 6;
+  if (tours < 2){
+    tours = 1;
+  }
   int tiers = tours / 3;
   int deuxTiers = tiers * 2;
   
@@ -150,6 +170,8 @@ void longRest(int x){
       
     }
   }
+  
+  Serial.println("Rest over !!");
   resetSerie();
 }
 
