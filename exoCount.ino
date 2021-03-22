@@ -18,15 +18,19 @@ int arrayLongRest[] = {25, 25, 180, 180, 120, 180, 180, 180, 90, 60};
 
 //int arraySerie[] = {6, 6, 6, 6, 6, 6, 4, 6, 6, 4};
 //int arrayCommonRest[] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 6};
-//int arrayLongRest[] = {2, 2, 18, 18, 12, 18, 18, 18, 9, 6};
+//int arrayLongRest[] = {18, 18, 18, 18, 12, 18, 18, 18, 9, 6};
 
 //int exoBras1[] = {6, 25, 25};
 
 int serie = 0;
 int exercice = 0;
-int secondes;
-int count;
-int modulo;
+int count = 0;
+int actBluePin = 0;
+int secondes = 0;
+
+bool state = true;
+bool low = true;
+bool high = false;
 
 //void verifExercice(){
 //  for (int x = 0; x < 10; x = x + 1) {
@@ -66,11 +70,10 @@ void loop()
     Serial.println("button pushed");
     String strState = "Exo - Series - Common Rest - Long Rest : ";
     Serial.println(strState + arrayExo[exercice] + " - " + arraySerie[exercice] + " - " + arrayCommonRest[exercice] + " - " + arrayLongRest[exercice] );
-
     serie = (serie + 1);
+    digitalWrite(serie + 6, HIGH);
     
     if (serie < arraySerie[exercice]){
-      digitalWrite(serie + 6, HIGH);
       commonRest(arrayCommonRest[exercice]);
       String strOne = "Serie finished : ";
       Serial.println(strOne + serie);
@@ -99,7 +102,6 @@ void offPin(){
 void commonRest(int x){
   
     Serial.println("let's take few rest...");
-    Serial.println(x);
     digitalWrite(workPin, LOW);
     
     for (secondes = 0; secondes < x; ++secondes) {
@@ -134,46 +136,52 @@ void longRest(int x){
   Serial.println(x);
   digitalWrite(workPin, LOW);
 
-  int tours = x / 6;
-  if (tours < 2){
-    tours = 1;
-  }
-  int tiers = tours / 3;
+  int tiers = x / 3;
   int deuxTiers = tiers * 2;
-  
-  //Serial.println (tiers);
-  //Serial.println (deuxTiers);
-  //Serial.println (tours);
-  
-  for (count = 0; count < tours; ++count) {
-    //Serial.println (count);
-    
-    modulo= count % 2;
+
+  while (count < x){
+
+    delay(1000);
+
+    actBluePin = count % 6;
 
     if (count >= tiers) {
       digitalWrite(greenPin, HIGH);
     }
-
     if (count >= deuxTiers) {
       digitalWrite(yellowPin, HIGH);
     }
-
-    for (int i = 7; i <= 12; i = i + 1) {
-      delay(1000); // Wait for 500 millisecond(s)
-      if (modulo == 1){
-        digitalWrite(i, LOW);
-      }
-      
-      if (modulo == 0){
-        digitalWrite(i, HIGH);
-      }
-      
+    
+    if ( actBluePin < 5 && low == true){
+      digitalWrite(myBluePins[actBluePin], LOW);
+      state = false;
     }
+    if ( actBluePin < 5 && high == true){
+      digitalWrite(myBluePins[actBluePin], HIGH);
+      state = true;
+    }
+    
+    if (actBluePin == 5){
+      if (state == false){
+        digitalWrite(myBluePins[actBluePin], LOW);
+        low = false;
+        high = true;
+      }
+      if (state == true){
+        digitalWrite(myBluePins[actBluePin], HIGH);
+        high = false;
+        low = true;
+      }
+    }
+
+    count++;
   }
   
   Serial.println("Rest over !!");
+  count = 0;
   resetSerie();
 }
+
 
 void resetSerie(){
   
