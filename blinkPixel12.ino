@@ -1,51 +1,107 @@
 #include <Adafruit_NeoPixel.h>
+
 #define PIN        6 // On Trinket or Gemma, suggest changing this to 1
 #define NUMPIXELS 12 // Popular NeoPixel ring size
-
-// see the strandtest example for more information on possible values.
-Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-
 #define DELAYVAL 1000 // Time (in milliseconds) to pause between pixels
 #define BRIGHTNESS 10
+#define TIME 1000
 
-void setup() {
-  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(13, OUTPUT);
+  pixels.begin();
   pixels.setBrightness(BRIGHTNESS);
 }
 
-void loop() {
-  blinkPixel(12);
+void loop()
+{
+  pixels.clear();
+  rest(25);
+  delay(100000); // Wait for 1000 millisecond(s)
 }
 
-void blinkPixel(int temps){
+void rest(float secondes)
+{
 
-  pixels.clear(); // Set all pixel colors to 'off'
-
-  int secondes = temps / NUMPIXELS;
-  int untiers = temps / 3;
-  int deuxtiers = untiers * 2;
-  int fin = temps - 1;
+  int count = 0;
   
-  for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
-    
-    if (i < deuxtiers){
-      pixels.setPixelColor(i, pixels.Color(0, 150, 0)); //GREEN
-    }
-
-    if ( i >= deuxtiers && i <= fin ){
-      for(int j=0; j<=i; j++) { // For each seconds...
-        pixels.setPixelColor(j, pixels.Color(255, 255, 0)); //YELLOW
-        }
-    }
-    
-    if (i >= fin){
-      pixels.fill(pixels.Color(255, 0, 0));
-   }
-
-    pixels.show();   // Send the updated pixel colors to the hardware.
-
-    for(int k=0; k<secondes; k++) { // For each seconds...
-        delay(DELAYVAL);
-    }
+  int greenTime = round((66*secondes)/100);
+  int redTime = int(secondes);
+  int ledOnTime = calcLedOnTime(secondes);
+  
+  Serial.println(ledOnTime);
+  Serial.println(secondes);
+  Serial.println(greenTime);
+  
+  while (count < greenTime){
+    Serial.println("greenTime");
+    Serial.println(count);
+    ledOnGreenLight(count, ledOnTime);
+    blinkWait();
+    count++;
   }
+
+  for(int j=0; j<=count; j++) {
+    ledOnYellowLight(j, ledOnTime);
+  }
+
+  while (count < redTime){
+    Serial.println("yellowTime");
+    Serial.println(count);
+    ledOnYellowLight(count, ledOnTime);
+    blinkWait();
+    count++;
+  }
+  
+  if (count = redTime){
+    Serial.println("redTime");
+    ledOnRedLight();
+    blinkWait();
+    Serial.println("fin");
+  }
+
+}
+
+int calcLedOnTime(int x){
+
+  int onTime;
+  onTime=(x/NUMPIXELS);
+  return onTime;
+}
+
+void ledOnGreenLight(int x, int ledOnTime){
+
+  int led;
+  led=(x/ledOnTime);
+  //Serial.println("Green Led");
+  //Serial.println(led);
+  pixels.setPixelColor(led, pixels.Color(0, 255, 0)); //GREEN
+  pixels.show();
+}
+
+void ledOnYellowLight(int x, int ledOnTime){
+
+  int led;
+  led=(x/ledOnTime);
+  //Serial.println("Yellow Led");
+  //Serial.println(led);
+  pixels.setPixelColor(led, pixels.Color(255, 255, 0)); //YELLOW
+  pixels.show();
+}
+
+void ledOnRedLight(){
+  pixels.fill(pixels.Color(255, 0, 0));
+  pixels.show();
+}
+
+void blinkWait(){
+  
+  digitalWrite(13, HIGH);
+  delay(500); // Wait for 500 millisecond(s)
+  digitalWrite(13, LOW);
+  delay(500); // Wait for 500 millisecond(s)
+  
 }
